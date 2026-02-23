@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HealthLedger — PiAgent</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0a0a0f;
+    --paper: #f0f4f8;
+    --deep: #0d1b2a;
+    --blue: #1b4f72;
+    --teal: #1a9988;
+    --teal-light: #4ecdc4;
+    --gold: #c8a96e;
+    --muted: #6b6b7a;
+    --line: rgba(10,10,15,0.09);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(--ink); overflow-x: hidden; }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 48px;
+    background: rgba(240,244,248,0.9); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; letter-spacing: -0.5px; color: var(--ink); text-decoration: none; }
+  .nav-logo span { color: var(--gold); }
+  .nav-links { display: flex; gap: 32px; list-style: none; }
+  .nav-links a { font-size: 13px; font-weight: 500; letter-spacing: 0.5px; color: var(--muted); text-decoration: none; text-transform: uppercase; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--ink); }
+  .nav-links a.active { color: var(--teal); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    background: var(--deep);
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding: 120px 48px 80px;
+    position: relative; overflow: hidden;
+  }
+  .hero-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(78,205,196,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(78,205,196,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+  .hero-glow {
+    position: absolute; right: -10%; top: -10%;
+    width: 70vh; height: 70vh;
+    background: radial-gradient(circle, rgba(78,205,196,0.12) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .hero-glow2 {
+    position: absolute; left: 30%; bottom: -20%;
+    width: 50vh; height: 50vh;
+    background: radial-gradient(circle, rgba(26,153,136,0.08) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .hero-content { position: relative; z-index: 1; max-width: 700px; }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11px; font-weight: 500; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--teal-light);
+    margin-bottom: 32px;
+  }
+  .hero-tag::before { content: ''; display: block; width: 32px; height: 1px; background: var(--teal-light); }
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(48px, 6.5vw, 96px);
+    font-weight: 800; line-height: 0.95;
+    letter-spacing: -3px; color: white; margin-bottom: 32px;
+  }
+  h1 em { font-style: normal; color: var(--teal-light); }
+  .hero-sub { font-size: 18px; font-weight: 300; line-height: 1.75; color: rgba(255,255,255,0.5); max-width: 540px; margin-bottom: 56px; }
+
+  /* ── LEDGER CARD VISUAL ── */
+  .ledger-card {
+    position: absolute; right: 6%; top: 50%; transform: translateY(-50%);
+    width: 340px; z-index: 1;
+  }
+  .card-device {
+    background: linear-gradient(135deg, #1a2a3a 0%, #0d1b2a 100%);
+    border-radius: 20px; padding: 32px;
+    box-shadow:
+      0 60px 120px rgba(0,0,0,0.6),
+      0 0 0 1px rgba(78,205,196,0.1),
+      inset 0 1px 0 rgba(255,255,255,0.05);
+    position: relative; overflow: hidden;
+  }
+  .card-device::before {
+    content: ''; position: absolute;
+    top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle at 70% 20%, rgba(78,205,196,0.08) 0%, transparent 50%);
+  }
+  .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
+  .card-brand { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800; color: white; letter-spacing: -0.5px; }
+  .card-brand span { color: var(--teal-light); }
+  .card-status { display: flex; align-items: center; gap: 6px; }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--teal-light); box-shadow: 0 0 8px var(--teal-light); animation: blink 2s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .status-text { font-size: 10px; color: var(--teal-light); font-weight: 500; letter-spacing: 0.5px; }
+  .card-metric { margin-bottom: 20px; }
+  .metric-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 4px; }
+  .metric-value { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; color: white; }
+  .metric-value small { font-size: 12px; font-weight: 400; color: rgba(255,255,255,0.4); margin-left: 4px; }
+  .card-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 20px 0; }
+  .card-footer { display: flex; justify-content: space-between; align-items: center; }
+  .card-owner { font-size: 11px; color: rgba(255,255,255,0.4); }
+  .card-lock { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--teal-light); }
+  .yubikey {
+    margin-top: 16px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(78,205,196,0.15);
+    border-radius: 12px; padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .yubikey-icon { font-size: 20px; }
+  .yubikey-text { font-size: 11px; color: rgba(255,255,255,0.5); line-height: 1.4; }
+  .yubikey-text strong { color: var(--teal-light); font-weight: 500; }
+
+  .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: var(--teal); color: white;
+    font-family: 'Syne', sans-serif; font-weight: 600; font-size: 14px;
+    letter-spacing: 0.5px; padding: 16px 32px; border-radius: 2px;
+    text-decoration: none; transition: all 0.2s;
+  }
+  .btn-primary:hover { background: var(--teal-light); color: var(--deep); }
+  .btn-ghost {
+    display: inline-flex; align-items: center; gap: 10px;
+    border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.7);
+    font-family: 'Syne', sans-serif; font-weight: 600; font-size: 14px;
+    letter-spacing: 0.5px; padding: 16px 32px; border-radius: 2px;
+    text-decoration: none; transition: all 0.2s;
+  }
+  .btn-ghost:hover { border-color: var(--teal-light); color: var(--teal-light); }
+
+  /* ── GRAVEYARD ── */
+  .graveyard { padding: 120px 48px; background: white; }
+  .section-label { font-size: 11px; font-weight: 500; letter-spacing: 3px; text-transform: uppercase; color: var(--teal); margin-bottom: 16px; }
+  .section-title { font-family: 'Syne', sans-serif; font-size: clamp(32px,4vw,56px); font-weight: 800; letter-spacing: -2px; margin-bottom: 16px; }
+  .section-sub { font-size: 16px; color: var(--muted); max-width: 480px; margin-bottom: 64px; line-height: 1.6; }
+  .grave-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; }
+  .grave-card { padding: 32px 28px; background: var(--paper); }
+  .grave-name { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .grave-year { font-size: 11px; font-weight: 500; letter-spacing: 1px; color: #c0392b; margin-bottom: 12px; }
+  .grave-reason { font-size: 13px; line-height: 1.6; color: var(--muted); }
+  .grave-reason strong { color: var(--ink); }
+
+  .versus {
+    margin-top: 64px; padding: 48px;
+    background: var(--deep); color: white; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    gap: 48px; flex-wrap: wrap; text-align: center;
+  }
+  .versus-item {}
+  .versus-label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 8px; }
+  .versus-value { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; }
+  .versus-value.good { color: var(--teal-light); }
+  .versus-value.bad { color: rgba(255,255,255,0.3); text-decoration: line-through; }
+  .versus-divider { font-size: 32px; color: rgba(255,255,255,0.1); font-weight: 300; }
+
+  /* ── MODULES ── */
+  .modules { padding: 120px 48px; background: var(--deep); color: white; }
+  .modules .section-label { color: var(--teal-light); }
+  .modules .section-title { color: white; }
+  .modules-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px; margin-top: 64px; }
+  .module-card { padding: 48px 40px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); }
+  .module-card:hover { background: rgba(78,205,196,0.05); border-color: rgba(78,205,196,0.15); }
+  .module-phase { font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--teal-light); margin-bottom: 20px; }
+  .module-icon { font-size: 36px; margin-bottom: 16px; }
+  .module-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 12px; }
+  .module-desc { font-size: 14px; line-height: 1.7; color: rgba(255,255,255,0.45); margin-bottom: 24px; }
+  .module-list { list-style: none; }
+  .module-list li { font-size: 12px; color: rgba(255,255,255,0.35); padding: 4px 0; display: flex; gap: 8px; }
+  .module-list li::before { content: '·'; color: var(--teal-light); }
+
+  footer {
+    padding: 40px 48px; background: var(--deep);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .footer-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 16px; color: white; }
+  .footer-logo span { color: var(--gold); }
+  .footer-nav { display: flex; gap: 24px; }
+  .footer-nav a { font-size: 13px; color: rgba(255,255,255,0.4); text-decoration: none; transition: color 0.2s; }
+  .footer-nav a:hover { color: white; }
+
+  .fade-up { opacity: 0; transform: translateY(24px); animation: fadeUp 0.7s ease forwards; }
+  @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+  .d1{animation-delay:.1s}.d2{animation-delay:.25s}.d3{animation-delay:.4s}.d4{animation-delay:.55s}
+
+  @media (max-width: 900px) {
+    nav { padding: 16px 24px; }
+    .nav-links { display: none; }
+    .hero { padding: 100px 24px 60px; }
+    .ledger-card { display: none; }
+    .graveyard { padding: 80px 24px; }
+    .grave-grid { grid-template-columns: 1fr 1fr; }
+    .modules { padding: 80px 24px; }
+    .modules-grid { grid-template-columns: 1fr; }
+    footer { padding: 24px; flex-direction: column; gap: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Pi<span>Agent</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Übersicht</a></li>
+    <li><a href="beihilfe.html">Beihilfe</a></li>
+    <li><a href="familymeal.html">FamilyMeal</a></li>
+    <li><a href="healthledger.html" class="active">HealthLedger</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-glow2"></div>
+  <div class="hero-content">
+    <div class="hero-tag fade-up d1">Modul 03 · Für alle</div>
+    <h1 class="fade-up d2">Deine Gesund&shy;heit.<br><em>Nur deins.</em></h1>
+    <p class="hero-sub fade-up d3">Das erste private Gesundheitsarchiv, das wirklich lokal ist. Verschlüsselt auf deinem eigenen Gerät — wie ein Hardware Wallet, aber für deine wichtigsten Daten.</p>
+    <div class="hero-actions fade-up d4">
+      <a href="index.html" class="btn-primary">← Alle Module ansehen</a>
+      <a href="beihilfe.html" class="btn-ghost">Mit Beihilfe verbinden</a>
+    </div>
+  </div>
+  <div class="ledger-card">
+    <div class="card-device">
+      <div class="card-header">
+        <div class="card-brand">Health<span>Ledger</span></div>
+        <div class="card-status">
+          <div class="status-dot"></div>
+          <span class="status-text">VERSCHLÜSSELT</span>
+        </div>
+      </div>
+      <div class="card-metric">
+        <div class="metric-label">Archivierte Dokumente</div>
+        <div class="metric-value">47 <small>Dokumente</small></div>
+      </div>
+      <div class="card-metric">
+        <div class="metric-label">Familienmitglieder</div>
+        <div class="metric-value">4 <small>Profile</small></div>
+      </div>
+      <div class="card-metric">
+        <div class="metric-label">Letzte Aktualisierung</div>
+        <div class="metric-value">Heute <small>14:23 Uhr</small></div>
+      </div>
+      <div class="card-divider"></div>
+      <div class="card-footer">
+        <span class="card-owner">Lokal · Offline-fähig</span>
+        <div class="card-lock">🔐 AES-256</div>
+      </div>
+    </div>
+    <div class="yubikey">
+      <div class="yubikey-icon">🗝️</div>
+      <div class="yubikey-text"><strong>YubiKey-Schutz aktiv</strong><br>Kein Passwort. Kein Cloud-Login. Nur dein physischer Schlüssel.</div>
+    </div>
+  </div>
+</section>
+
+<section class="graveyard">
+  <p class="section-label">Der Markt hat versagt</p>
+  <h2 class="section-title">Alle anderen<br>sind gescheitert.</h2>
+  <p class="section-sub">Jede bisherige Gesundheits-App hatte dasselbe Problem: Deine sensibelsten Daten lagen auf fremden Servern. Das Ergebnis war absehbar.</p>
+  <div class="grave-grid">
+    <div class="grave-card">
+      <div class="grave-name">Vivy</div>
+      <div class="grave-year">† 2022</div>
+      <div class="grave-reason">Allianz & AXA betrieben. <strong>Cloud-Abhängigkeit</strong>, massive Datenschutzbedenken. Eingestellt.</div>
+    </div>
+    <div class="grave-card">
+      <div class="grave-name">TK-Safe</div>
+      <div class="grave-year">† 2021</div>
+      <div class="grave-reason">Techniker Krankenkasse. <strong>Vertrauensverlust</strong> durch unklare Datenpolitik. Eingestellt.</div>
+    </div>
+    <div class="grave-card">
+      <div class="grave-name">HealthVault</div>
+      <div class="grave-year">† 2019</div>
+      <div class="grave-reason">Microsoft. <strong>Keine Patientenkontrolle</strong>, Cloud-only. Eingestellt.</div>
+    </div>
+    <div class="grave-card" style="background: rgba(78,205,196,0.05); border: 1px solid rgba(78,205,196,0.2);">
+      <div class="grave-name" style="color: var(--teal);">HealthLedger</div>
+      <div class="grave-year" style="color: var(--teal);">✓ Aktiv</div>
+      <div class="grave-reason">Lokal auf deinem Pi. <strong>Kein fremder Server.</strong> Nichts zum Abschalten.</div>
+    </div>
+  </div>
+  <div class="versus">
+    <div class="versus-item">
+      <div class="versus-label">ePA (Gematik)</div>
+      <div class="versus-value bad">Daten bei Krankenkasse</div>
+    </div>
+    <div class="versus-divider">vs</div>
+    <div class="versus-item">
+      <div class="versus-label">HealthLedger Pi</div>
+      <div class="versus-value good">Daten auf deinem Gerät</div>
+    </div>
+  </div>
+</section>
+
+<section class="modules">
+  <p class="section-label">Was HealthLedger kann</p>
+  <h2 class="section-title">Vier Module.<br>Ein Archiv.</h2>
+  <div class="modules-grid">
+    <div class="module-card">
+      <div class="module-phase">Phase 1 · Kern</div>
+      <div class="module-icon">📄</div>
+      <div class="module-title">Dokumente-Safe</div>
+      <div class="module-desc">Alle medizinischen Dokumente sicher archiviert. KI extrahiert automatisch Datum, Arzt und Diagnose — sofort auffindbar.</div>
+      <ul class="module-list">
+        <li>PDF, JPG, PNG — alles wird erkannt</li>
+        <li>Volltextsuche über alle Dokumente</li>
+        <li>Tags: Person, Arzt, Datum, Typ</li>
+      </ul>
+    </div>
+    <div class="module-card">
+      <div class="module-phase">Phase 1 · Kern</div>
+      <div class="module-icon">🏦</div>
+      <div class="module-title">Versicherungs-Hub</div>
+      <div class="module-desc">PKV-Profile, Beihilfe-Tracking, Ablauffristen — alles an einem Ort. Nahtlose Integration mit dem Beihilfe-Agenten.</div>
+      <ul class="module-list">
+        <li>PKV-Tarife und Erstattungsregeln hinterlegt</li>
+        <li>Automatische Beihilfe-Berechnung</li>
+        <li>Fristen-Kalender mit Erinnerungen</li>
+      </ul>
+    </div>
+    <div class="module-card">
+      <div class="module-phase">Phase 1 · Kern</div>
+      <div class="module-icon">💊</div>
+      <div class="module-title">Medikamenten-Log</div>
+      <div class="module-desc">Dauermedikation, Allergien, Wechselwirkungen — und im Notfall: ein QR-Code für den Rettungsdienst.</div>
+      <ul class="module-list">
+        <li>KI-Wechselwirkungscheck (lokal)</li>
+        <li>Notfall-QR mit wichtigsten Infos</li>
+        <li>Impfpass digital hinterlegen</li>
+      </ul>
+    </div>
+    <div class="module-card">
+      <div class="module-phase">Phase 2 · KI</div>
+      <div class="module-icon">🩺</div>
+      <div class="module-title">Befund-Erklärung</div>
+      <div class="module-desc">Arztbefund hochladen → KI erklärt in verständlichem Deutsch, was die Diagnose bedeutet und welche Fragen du beim nächsten Termin stellen solltest.</div>
+      <ul class="module-list">
+        <li>Medizinische Fachbegriffe in Klartext</li>
+        <li>Automatisch: Beihilfe-Formular vorbereiten</li>
+        <li>Zeitstrahl deiner Gesundheitsgeschichte</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">Pi<span>Agent</span></div>
+  <nav class="footer-nav">
+    <a href="familymeal.html">← FamilyMeal</a>
+    <a href="index.html">Übersicht</a>
+    <a href="beihilfe.html">Beihilfe-Agent →</a>
+  </nav>
+</footer>
+
+</body>
+</html>
