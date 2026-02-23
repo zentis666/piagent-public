@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beihilfe-Agent — PiAgent</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0a0a0f;
+    --paper: #f5f3ee;
+    --accent: #1a3a2e;
+    --green: #2d6a4f;
+    --green-light: #74c69d;
+    --gold: #c8a96e;
+    --muted: #6b6b7a;
+    --line: rgba(10,10,15,0.1);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(--ink); overflow-x: hidden; }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 48px;
+    background: rgba(245,243,238,0.9); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; letter-spacing: -0.5px; color: var(--ink); text-decoration: none; }
+  .nav-logo span { color: var(--gold); }
+  .nav-links { display: flex; gap: 32px; list-style: none; }
+  .nav-links a { font-size: 13px; font-weight: 500; letter-spacing: 0.5px; color: var(--muted); text-decoration: none; text-transform: uppercase; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--ink); }
+  .nav-links a.active { color: var(--green); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh; display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    padding-top: 80px;
+    overflow: hidden;
+  }
+  .hero-left {
+    padding: 80px 48px 80px 48px;
+  }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11px; font-weight: 500; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--green);
+    margin-bottom: 32px;
+  }
+  .hero-tag::before { content: ''; display: block; width: 32px; height: 1px; background: var(--green); }
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(44px, 5vw, 80px);
+    font-weight: 800; line-height: 0.95;
+    letter-spacing: -2.5px; margin-bottom: 32px;
+  }
+  h1 em { font-style: normal; color: var(--green); }
+  .hero-sub { font-size: 17px; font-weight: 300; line-height: 1.75; color: var(--muted); max-width: 440px; margin-bottom: 48px; }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: var(--green); color: white;
+    font-family: 'Syne', sans-serif; font-weight: 600;
+    font-size: 14px; letter-spacing: 0.5px;
+    padding: 16px 32px; border-radius: 2px;
+    text-decoration: none; transition: all 0.2s;
+  }
+  .btn-primary:hover { background: var(--ink); }
+
+  /* ── RIGHT PANEL — Receipt Visual ── */
+  .hero-right {
+    height: 100vh; background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+  }
+  .hero-right::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(116,198,157,0.1) 0%, transparent 70%);
+  }
+  .receipt-stack { position: relative; width: 280px; }
+  .receipt {
+    background: white; border-radius: 4px;
+    padding: 24px; width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    position: relative;
+  }
+  .receipt::after {
+    content: '';
+    position: absolute; bottom: -8px; left: 16px; right: 16px;
+    height: 8px;
+    background: white;
+    clip-path: polygon(0 0, 4% 100%, 8% 0, 12% 100%, 16% 0, 20% 100%, 24% 0, 28% 100%, 32% 0, 36% 100%, 40% 0, 44% 100%, 48% 0, 52% 100%, 56% 0, 60% 100%, 64% 0, 68% 100%, 72% 0, 76% 100%, 80% 0, 84% 100%, 88% 0, 92% 100%, 96% 0, 100% 100%, 100% 0);
+  }
+  .receipt-header { text-align: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px dashed #eee; }
+  .receipt-practice { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: #333; }
+  .receipt-date { font-size: 10px; color: #999; margin-top: 2px; }
+  .receipt-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 11px; color: #555; }
+  .receipt-row.total { font-weight: 700; color: #222; border-top: 1px solid #eee; margin-top: 8px; padding-top: 8px; font-size: 13px; }
+  .receipt-stamp {
+    position: absolute; top: 16px; right: 16px;
+    width: 56px; height: 56px; border-radius: 50%;
+    border: 2px solid var(--green-light); color: var(--green);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.5px;
+    text-align: center; line-height: 1.3;
+    transform: rotate(-15deg);
+    background: rgba(116,198,157,0.08);
+  }
+  .scan-overlay {
+    position: absolute; top: -24px; left: -24px; right: -24px;
+    background: rgba(26,58,46,0.95); border-radius: 12px;
+    padding: 20px 24px;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+    z-index: 2;
+  }
+  .scan-title { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--green-light); margin-bottom: 12px; }
+  .scan-field { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .scan-field-label { font-size: 10px; color: rgba(255,255,255,0.4); }
+  .scan-field-value { font-size: 11px; font-weight: 500; color: white; }
+  .scan-field-value.hi { color: var(--green-light); }
+  .scan-bar {
+    margin-top: 14px; height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden;
+  }
+  .scan-bar-fill { height: 100%; width: 72%; background: var(--green-light); border-radius: 2px; animation: scanprog 2s ease-in-out infinite; }
+  @keyframes scanprog { 0%,100% { width: 40%; } 50% { width: 88%; } }
+  .scan-status { margin-top: 8px; font-size: 9px; color: var(--green-light); opacity: 0.7; }
+
+  /* ── PROBLEM/SOLUTION ── */
+  .comparison {
+    padding: 120px 48px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
+  }
+  .compare-panel {
+    padding: 56px 48px;
+  }
+  .compare-panel.before { background: #f0ece3; }
+  .compare-panel.after { background: var(--green); color: white; }
+  .compare-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; margin-bottom: 32px;
+    opacity: 0.6;
+  }
+  .compare-panel.after .compare-label { color: rgba(255,255,255,0.6); }
+  .compare-time {
+    font-family: 'Syne', sans-serif;
+    font-size: 72px; font-weight: 800;
+    line-height: 1; margin-bottom: 8px;
+    letter-spacing: -3px;
+  }
+  .compare-panel.before .compare-time { color: rgba(10,10,15,0.15); }
+  .compare-panel.after .compare-time { color: rgba(255,255,255,0.2); }
+  .compare-unit {
+    font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 700;
+    margin-bottom: 24px;
+  }
+  .compare-panel.after .compare-unit { color: var(--green-light); }
+  .compare-list { list-style: none; }
+  .compare-list li {
+    padding: 10px 0; border-bottom: 1px solid rgba(10,10,15,0.08);
+    font-size: 14px; display: flex; align-items: center; gap: 10px;
+  }
+  .compare-panel.after .compare-list li { border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); }
+  .compare-list li::before { font-size: 14px; }
+  .compare-panel.before .compare-list li::before { content: '✗'; color: #c0392b; }
+  .compare-panel.after .compare-list li::before { content: '✓'; color: var(--green-light); }
+
+  /* ── HOW IT WORKS ── */
+  .how {
+    padding: 120px 48px;
+    background: var(--ink); color: white;
+  }
+  .how .section-label { font-size: 11px; font-weight: 500; letter-spacing: 3px; text-transform: uppercase; color: var(--green-light); margin-bottom: 16px; }
+  .how .section-title { font-family: 'Syne', sans-serif; font-size: clamp(32px,4vw,56px); font-weight: 800; letter-spacing: -2px; margin-bottom: 80px; }
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 48px; }
+  .step {}
+  .step-num {
+    font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700;
+    color: var(--green-light); letter-spacing: 2px; margin-bottom: 20px;
+  }
+  .step-icon { font-size: 36px; margin-bottom: 16px; }
+  .step-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .step-desc { font-size: 13px; line-height: 1.7; color: rgba(255,255,255,0.45); }
+  .step-connector {
+    grid-column: span 1;
+    display: flex; align-items: center; justify-content: flex-end;
+  }
+
+  footer {
+    padding: 40px 48px; background: var(--paper);
+    border-top: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .footer-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 16px; color: var(--ink); }
+  .footer-logo span { color: var(--gold); }
+  .footer-nav { display: flex; gap: 24px; }
+  .footer-nav a { font-size: 13px; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+  .footer-nav a:hover { color: var(--ink); }
+
+  .fade-up { opacity: 0; transform: translateY(24px); animation: fadeUp 0.7s ease forwards; }
+  @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+  .d1 { animation-delay: 0.1s; } .d2 { animation-delay: 0.25s; } .d3 { animation-delay: 0.4s; } .d4 { animation-delay: 0.55s; }
+
+  @media (max-width: 900px) {
+    nav { padding: 16px 24px; }
+    .nav-links { display: none; }
+    .hero { grid-template-columns: 1fr; }
+    .hero-right { display: none; }
+    .hero-left { padding: 100px 24px 60px; }
+    .comparison { grid-template-columns: 1fr; padding: 60px 24px; }
+    .how { padding: 80px 24px; }
+    .steps { grid-template-columns: 1fr 1fr; gap: 32px; }
+    footer { padding: 24px; flex-direction: column; gap: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Pi<span>Agent</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Übersicht</a></li>
+    <li><a href="beihilfe.html" class="active">Beihilfe</a></li>
+    <li><a href="familymeal.html">FamilyMeal</a></li>
+    <li><a href="healthledger.html">HealthLedger</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-tag fade-up d1">Modul 01 · Für Beamte</div>
+    <h1 class="fade-up d2">Beihilfe<br>in <em>30 Sekunden.</em></h1>
+    <p class="hero-sub fade-up d3">Schluss mit stundenlangem Ausfüllen von Formularen. Rechnung fotografieren — der Beihilfe-Agent erledigt den Rest automatisch.</p>
+    <a href="index.html" class="btn-primary fade-up d4">← Alle Module ansehen</a>
+  </div>
+  <div class="hero-right">
+    <div class="receipt-stack">
+      <div class="scan-overlay">
+        <div class="scan-title">🤖 KI analysiert …</div>
+        <div class="scan-field"><span class="scan-field-label">Behandler</span><span class="scan-field-value">Dr. med. M. Weber</span></div>
+        <div class="scan-field"><span class="scan-field-label">Leistung</span><span class="scan-field-value">GOÄ 75 · Beratung</span></div>
+        <div class="scan-field"><span class="scan-field-label">Rechnungsbetrag</span><span class="scan-field-value">187,40 €</span></div>
+        <div class="scan-field"><span class="scan-field-label">Beihilfe 50%</span><span class="scan-field-value hi">93,70 €</span></div>
+        <div class="scan-field"><span class="scan-field-label">Einreichfrist</span><span class="scan-field-value hi">12 Monate</span></div>
+        <div class="scan-bar"><div class="scan-bar-fill"></div></div>
+        <div class="scan-status">Formular wird vorbereitet …</div>
+      </div>
+      <div class="receipt" style="margin-top: 80px;">
+        <div class="receipt-stamp">ERFASST<br>✓</div>
+        <div class="receipt-header">
+          <div class="receipt-practice">Dr. med. M. Weber</div>
+          <div class="receipt-date">Facharzt für Allgemeinmedizin · 14.02.2026</div>
+        </div>
+        <div class="receipt-row"><span>GOÄ 1 – Beratung</span><span>10,72 €</span></div>
+        <div class="receipt-row"><span>GOÄ 75 – Vollständige Untersuchung</span><span>26,23 €</span></div>
+        <div class="receipt-row"><span>GOÄ 250 – Blutentnahme</span><span>4,66 €</span></div>
+        <div class="receipt-row"><span>Labor (GOÄ 3550–3592)</span><span>145,79 €</span></div>
+        <div class="receipt-row total"><span>Gesamt</span><span>187,40 €</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="comparison">
+  <div class="compare-panel before">
+    <div class="compare-label">Vorher — ohne Agent</div>
+    <div class="compare-time">45</div>
+    <div class="compare-unit">Minuten pro Rechnung</div>
+    <ul class="compare-list">
+      <li>Formular ausdrucken und manuell ausfüllen</li>
+      <li>GOÄ-Ziffern selbst nachschlagen</li>
+      <li>Beihilfesatz manuell berechnen</li>
+      <li>Fristen im Kalender nachtragen</li>
+      <li>Rechnungen sortieren und abheften</li>
+      <li>Bei Fehlern: alles nochmal</li>
+    </ul>
+  </div>
+  <div class="compare-panel after">
+    <div class="compare-label">Nachher — mit Beihilfe-Agent</div>
+    <div class="compare-time">30</div>
+    <div class="compare-unit" style="color: var(--green-light);">Sekunden pro Rechnung</div>
+    <ul class="compare-list">
+      <li>Rechnung fotografieren — fertig</li>
+      <li>KI erkennt alle GOÄ-Positionen automatisch</li>
+      <li>Beihilfe & PKV-Anteil sofort berechnet</li>
+      <li>Fristen werden automatisch getrackt</li>
+      <li>Digitales Archiv, jederzeit durchsuchbar</li>
+      <li>Widerspruchstexte bei Ablehnung generiert</li>
+    </ul>
+  </div>
+</section>
+
+<section class="how">
+  <p class="section-label">So funktioniert es</p>
+  <h2 class="section-title">Vier Schritte.<br>Fertig.</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">SCHRITT 01</div>
+      <div class="step-icon">📷</div>
+      <div class="step-title">Fotografieren</div>
+      <div class="step-desc">Rechnung einfach mit dem Smartphone abfotografieren oder als PDF hochladen. Das war's.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">SCHRITT 02</div>
+      <div class="step-icon">🤖</div>
+      <div class="step-title">KI analysiert</div>
+      <div class="step-desc">Die KI erkennt automatisch Behandler, GOÄ-Positionen, Beträge und Datum.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">SCHRITT 03</div>
+      <div class="step-icon">🧮</div>
+      <div class="step-title">Berechnung</div>
+      <div class="step-desc">Beihilfe- und PKV-Anteile werden sofort berechnet. Frist wird automatisch eingetragen.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">SCHRITT 04</div>
+      <div class="step-icon">✅</div>
+      <div class="step-title">Einreichen</div>
+      <div class="step-desc">Formular ist vorausgefüllt. Prüfen, absenden — und auf die Erstattung warten.</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">Pi<span>Agent</span></div>
+  <nav class="footer-nav">
+    <a href="index.html">Übersicht</a>
+    <a href="familymeal.html">FamilyMeal →</a>
+    <a href="healthledger.html">HealthLedger →</a>
+  </nav>
+</footer>
+
+</body>
+</html>
