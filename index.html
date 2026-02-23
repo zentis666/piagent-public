@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PiAgent — Dein persönlicher KI-Assistent</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0a0a0f;
+    --paper: #f5f3ee;
+    --accent: #1a1a2e;
+    --gold: #c8a96e;
+    --gold-light: #e8d5a3;
+    --muted: #6b6b7a;
+    --line: rgba(10,10,15,0.1);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 48px;
+    background: rgba(245,243,238,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 18px;
+    letter-spacing: -0.5px;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--gold); }
+  .nav-links { display: flex; gap: 32px; list-style: none; }
+  .nav-links a {
+    font-size: 13px; font-weight: 500; letter-spacing: 0.5px;
+    color: var(--muted); text-decoration: none; text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--ink); }
+  .nav-links a.active { color: var(--gold); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding: 120px 48px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 60% 80% at 80% 50%, rgba(200,169,110,0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 60% at 20% 80%, rgba(26,26,46,0.06) 0%, transparent 60%);
+  }
+  .hero-grid {
+    position: absolute; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 80px 80px;
+    mask-image: radial-gradient(ellipse 70% 70% at 70% 50%, black 0%, transparent 100%);
+    opacity: 0.5;
+  }
+  .hero-content { position: relative; z-index: 1; max-width: 680px; }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11px; font-weight: 500; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--gold);
+    margin-bottom: 32px;
+  }
+  .hero-tag::before {
+    content: ''; display: block;
+    width: 32px; height: 1px; background: var(--gold);
+  }
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(48px, 7vw, 96px);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -3px;
+    color: var(--ink);
+    margin-bottom: 32px;
+  }
+  h1 em {
+    font-style: normal;
+    color: var(--gold);
+  }
+  .hero-sub {
+    font-size: 18px; font-weight: 300; line-height: 1.7;
+    color: var(--muted); max-width: 480px; margin-bottom: 56px;
+  }
+  .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: var(--ink); color: var(--paper);
+    font-family: 'Syne', sans-serif; font-weight: 600;
+    font-size: 14px; letter-spacing: 0.5px;
+    padding: 16px 32px; border-radius: 2px;
+    text-decoration: none; transition: all 0.2s;
+  }
+  .btn-primary:hover { background: var(--gold); color: var(--ink); }
+  .btn-ghost {
+    display: inline-flex; align-items: center; gap: 10px;
+    border: 1px solid var(--ink); color: var(--ink);
+    font-family: 'Syne', sans-serif; font-weight: 600;
+    font-size: 14px; letter-spacing: 0.5px;
+    padding: 16px 32px; border-radius: 2px;
+    text-decoration: none; transition: all 0.2s;
+  }
+  .btn-ghost:hover { background: var(--ink); color: var(--paper); }
+
+  /* ── DEVICES VISUAL ── */
+  .hero-device {
+    position: absolute; right: 6%; top: 50%; transform: translateY(-50%);
+    z-index: 1;
+  }
+  .pi-visual {
+    width: 240px; height: 380px;
+    background: var(--ink);
+    border-radius: 16px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 12px;
+    box-shadow: 0 40px 80px rgba(10,10,15,0.3), 0 0 0 1px rgba(200,169,110,0.2);
+    position: relative;
+    overflow: hidden;
+  }
+  .pi-visual::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 40px;
+    background: linear-gradient(180deg, rgba(200,169,110,0.15) 0%, transparent 100%);
+  }
+  .pi-app {
+    width: 180px; padding: 12px 16px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(200,169,110,0.2);
+    border-radius: 8px;
+  }
+  .pi-app-icon { font-size: 20px; margin-bottom: 6px; }
+  .pi-app-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px; font-weight: 600;
+    color: var(--gold-light); letter-spacing: 0.5px;
+  }
+  .pi-app-status {
+    font-size: 10px; color: rgba(255,255,255,0.4);
+    margin-top: 2px;
+  }
+  .pi-label {
+    position: absolute; bottom: 16px;
+    font-size: 9px; letter-spacing: 2px;
+    text-transform: uppercase; color: rgba(200,169,110,0.5);
+  }
+  .pi-dot {
+    position: absolute; top: 14px; right: 14px;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 8px #4ade80;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ── PRODUCTS SECTION ── */
+  .products {
+    padding: 120px 48px;
+    border-top: 1px solid var(--line);
+  }
+  .section-label {
+    font-size: 11px; font-weight: 500; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--gold);
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(32px, 4vw, 56px);
+    font-weight: 800; line-height: 1.05;
+    letter-spacing: -2px; margin-bottom: 64px;
+  }
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+  }
+  .product-card {
+    background: white;
+    padding: 48px 40px;
+    position: relative; overflow: hidden;
+    text-decoration: none; color: inherit;
+    transition: all 0.3s;
+    display: block;
+  }
+  .product-card:hover { background: var(--ink); }
+  .product-card:hover .card-title,
+  .product-card:hover .card-desc,
+  .product-card:hover .card-features li { color: var(--paper); }
+  .product-card:hover .card-num { color: rgba(200,169,110,0.3); }
+  .product-card:hover .card-arrow { color: var(--gold); }
+  .product-card:hover .card-tag { background: rgba(200,169,110,0.1); color: var(--gold); }
+  .card-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 72px; font-weight: 800;
+    color: rgba(10,10,15,0.05);
+    line-height: 1; margin-bottom: 24px;
+    transition: color 0.3s;
+  }
+  .card-icon { font-size: 32px; margin-bottom: 20px; }
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 24px; font-weight: 700;
+    letter-spacing: -0.5px; margin-bottom: 12px;
+    transition: color 0.3s;
+  }
+  .card-desc {
+    font-size: 14px; line-height: 1.7;
+    color: var(--muted); margin-bottom: 24px;
+    transition: color 0.3s;
+  }
+  .card-features {
+    list-style: none; margin-bottom: 32px;
+  }
+  .card-features li {
+    font-size: 13px; color: var(--muted);
+    padding: 6px 0; border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 8px;
+    transition: color 0.3s;
+  }
+  .card-features li::before { content: '→'; color: var(--gold); font-size: 12px; }
+  .card-tag {
+    display: inline-block;
+    font-size: 10px; font-weight: 600; letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 10px; border-radius: 2px;
+    background: rgba(200,169,110,0.1); color: var(--gold);
+    margin-bottom: 16px; transition: all 0.3s;
+  }
+  .card-arrow {
+    font-size: 24px; color: var(--muted);
+    transition: color 0.3s;
+    display: block; margin-top: 8px;
+  }
+
+  /* ── WHY SECTION ── */
+  .why {
+    padding: 120px 48px;
+    background: var(--ink); color: var(--paper);
+  }
+  .why .section-title { color: var(--paper); }
+  .why-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 48px; margin-top: 64px;
+  }
+  .why-item {}
+  .why-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 48px; font-weight: 800;
+    color: var(--gold); margin-bottom: 8px;
+  }
+  .why-label {
+    font-size: 16px; font-weight: 500; margin-bottom: 8px;
+  }
+  .why-desc {
+    font-size: 13px; line-height: 1.7;
+    color: rgba(245,243,238,0.5);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 40px 48px;
+    border-top: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .footer-logo {
+    font-family: 'Syne', sans-serif; font-weight: 800;
+    font-size: 16px; color: var(--ink);
+  }
+  .footer-logo span { color: var(--gold); }
+  .footer-note {
+    font-size: 12px; color: var(--muted);
+  }
+
+  /* ── ANIMATIONS ── */
+  .fade-up {
+    opacity: 0; transform: translateY(30px);
+    animation: fadeUp 0.8s ease forwards;
+  }
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up:nth-child(1) { animation-delay: 0.1s; }
+  .fade-up:nth-child(2) { animation-delay: 0.25s; }
+  .fade-up:nth-child(3) { animation-delay: 0.4s; }
+  .fade-up:nth-child(4) { animation-delay: 0.55s; }
+
+  @media (max-width: 900px) {
+    nav { padding: 16px 24px; }
+    .nav-links { display: none; }
+    .hero { padding: 100px 24px 60px; }
+    .hero-device { display: none; }
+    .products { padding: 80px 24px; }
+    .products-grid { grid-template-columns: 1fr; }
+    .why { padding: 80px 24px; }
+    .why-grid { grid-template-columns: repeat(2, 1fr); gap: 32px; }
+    footer { padding: 24px; flex-direction: column; gap: 12px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Pi<span>Agent</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Übersicht</a></li>
+    <li><a href="beihilfe.html">Beihilfe</a></li>
+    <li><a href="familymeal.html">FamilyMeal</a></li>
+    <li><a href="healthledger.html">HealthLedger</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="hero-tag fade-up">Dein persönlicher KI-Assistent</div>
+    <h1 class="fade-up">KI.<br>Lokal.<br><em>Privat.</em></h1>
+    <p class="hero-sub fade-up">Drei leistungsstarke KI-Assistenten auf einem Gerät — für Beamte, Familien und alle, die ihre Gesundheitsdaten selbst verwalten wollen.</p>
+    <div class="hero-actions fade-up">
+      <a href="beihilfe.html" class="btn-primary">Produkte entdecken →</a>
+      <a href="healthledger.html" class="btn-ghost">HealthLedger</a>
+    </div>
+  </div>
+  <div class="hero-device">
+    <div class="pi-visual">
+      <div class="pi-dot"></div>
+      <div class="pi-app">
+        <div class="pi-app-icon">🏛️</div>
+        <div class="pi-app-name">Beihilfe-Agent</div>
+        <div class="pi-app-status">Aktiv · 3 Rechnungen</div>
+      </div>
+      <div class="pi-app">
+        <div class="pi-app-icon">🍽️</div>
+        <div class="pi-app-name">FamilyMeal</div>
+        <div class="pi-app-status">Wochenplan bereit</div>
+      </div>
+      <div class="pi-app">
+        <div class="pi-app-icon">🏥</div>
+        <div class="pi-app-name">HealthLedger</div>
+        <div class="pi-app-status">Verschlüsselt · Lokal</div>
+      </div>
+      <div class="pi-label">Raspberry Pi 5</div>
+    </div>
+  </div>
+</section>
+
+<section class="products">
+  <p class="section-label">Die drei Module</p>
+  <h2 class="section-title">Alles auf<br>einem Gerät.</h2>
+  <div class="products-grid">
+    <a href="beihilfe.html" class="product-card">
+      <div class="card-num">01</div>
+      <div class="card-icon">🏛️</div>
+      <div class="card-tag">Für Beamte</div>
+      <div class="card-title">Beihilfe-Agent</div>
+      <div class="card-desc">Schluss mit dem Papierchaos. Rechnung fotografieren — der Rest passiert von selbst.</div>
+      <ul class="card-features">
+        <li>Automatische Rechnungserfassung per Foto</li>
+        <li>Beihilfe- & PKV-Berechnung in Sekunden</li>
+        <li>Fristen nie wieder vergessen</li>
+      </ul>
+      <span class="card-arrow">↗</span>
+    </a>
+    <a href="familymeal.html" class="product-card">
+      <div class="card-num">02</div>
+      <div class="card-icon">🍽️</div>
+      <div class="card-tag">Für Familien</div>
+      <div class="card-title">FamilyMeal</div>
+      <div class="card-desc">Wochenplanung, Einkaufsliste, Rezepte — KI-gesteuert, auf deine Familie zugeschnitten.</div>
+      <ul class="card-features">
+        <li>Wochenplan per KI in Sekunden</li>
+        <li>Aktuelle Supermarkt-Angebote eingebunden</li>
+        <li>Einkaufsliste automatisch generiert</li>
+      </ul>
+      <span class="card-arrow">↗</span>
+    </a>
+    <a href="healthledger.html" class="product-card">
+      <div class="card-num">03</div>
+      <div class="card-icon">🏥</div>
+      <div class="card-tag">Für alle</div>
+      <div class="card-title">HealthLedger</div>
+      <div class="card-desc">Deine Gesundheitsdaten gehören dir. Verschlüsselt, lokal, auditierbar — wie ein Hardware Wallet für deine Gesundheit.</div>
+      <ul class="card-features">
+        <li>Alle Dokumente sicher archiviert</li>
+        <li>YubiKey-Schutz, kein Passwort nötig</li>
+        <li>Funktioniert komplett ohne Internet</li>
+      </ul>
+      <span class="card-arrow">↗</span>
+    </a>
+  </div>
+</section>
+
+<section class="why">
+  <p class="section-label" style="color: var(--gold);">Warum PiAgent</p>
+  <h2 class="section-title">Deine Daten.<br>Dein Gerät.</h2>
+  <div class="why-grid">
+    <div class="why-item">
+      <div class="why-num">100%</div>
+      <div class="why-label">Lokal & Privat</div>
+      <div class="why-desc">Alle Daten bleiben auf deinem Gerät zuhause. Keine fremden Server, kein Daten-Mining.</div>
+    </div>
+    <div class="why-item">
+      <div class="why-num">3</div>
+      <div class="why-label">Module in einem</div>
+      <div class="why-desc">Beihilfe, Mahlzeitenplanung und Gesundheitsarchiv — auf einem einzigen Gerät.</div>
+    </div>
+    <div class="why-item">
+      <div class="why-num">🇩🇪</div>
+      <div class="why-label">DSGVO by Design</div>
+      <div class="why-desc">Entwickelt für deutsche Anforderungen. Cloud-Komponenten ausschließlich auf deutschen Servern.</div>
+    </div>
+    <div class="why-item">
+      <div class="why-num">∞</div>
+      <div class="why-label">Immer verfügbar</div>
+      <div class="why-desc">Läuft 24/7 in deinem Heimnetz. Kein Abo nötig um auf deine eigenen Daten zuzugreifen.</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">Pi<span>Agent</span></div>
+  <div class="footer-note">KI-Assistenten für den deutschen Alltag · Lokal · Privat · Sicher</div>
+</footer>
+
+</body>
+</html>
