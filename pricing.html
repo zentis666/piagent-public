@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preise & Pakete – PPAA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0A0F1A; --bg2:#0F1726; --bg3:#131D2E; --surface:#1A2540;
+  --border:#1E2E48; --accent:#00C8FF; --accent2:#00FF9D; --warn:#FF6B35;
+  --text:#E8EDF5; --muted:#6B7FA3;
+  --mono:'Space Mono',monospace; --sans:'Syne',sans-serif; --body:'DM Sans',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.6;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1.2rem 4rem;background:rgba(10,15,26,.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
+.nav-logo{font-family:var(--mono);font-weight:700;font-size:1.1rem;color:var(--accent);letter-spacing:.1em;text-decoration:none;}
+.nav-logo span{color:var(--accent2);}
+.nav-links{display:flex;gap:2.5rem;align-items:center;}
+.nav-links a{font-size:.9rem;color:var(--muted);text-decoration:none;transition:color .2s;}
+.nav-links a:hover{color:var(--text);}
+.nav-cta{background:transparent;border:1px solid var(--accent);color:var(--accent)!important;padding:.45rem 1.2rem;border-radius:4px;font-size:.85rem!important;transition:background .2s,color .2s!important;}
+.nav-cta:hover{background:var(--accent)!important;color:var(--bg)!important;}
+
+.page-hero{padding:10rem 2rem 5rem;text-align:center;position:relative;overflow:hidden;}
+.page-hero::before{content:'';position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(0,200,255,.1) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-60%);pointer-events:none;}
+.page-hero h1{font-family:var(--sans);font-weight:800;font-size:clamp(2.5rem,6vw,4.5rem);letter-spacing:-.02em;line-height:1.05;margin-bottom:1rem;position:relative;}
+.page-hero p{color:var(--muted);font-size:1.1rem;max-width:550px;margin:0 auto;position:relative;}
+
+.section-label{font-family:var(--mono);font-size:.75rem;color:var(--accent);letter-spacing:.15em;text-transform:uppercase;margin-bottom:.75rem;}
+.container{max-width:1100px;margin:0 auto;}
+section{position:relative;padding:5rem 2rem;}
+
+/* ── TOGGLE ── */
+.billing-toggle{display:flex;align-items:center;gap:1rem;justify-content:center;margin:2.5rem 0;}
+.toggle-label{font-size:.9rem;color:var(--muted);}
+.toggle-label.active{color:var(--text);font-weight:500;}
+.toggle-wrap{position:relative;width:52px;height:28px;cursor:pointer;}
+.toggle-wrap input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:var(--surface);border:1px solid var(--border);border-radius:100px;transition:.3s;}
+.toggle-slider::before{content:'';position:absolute;height:20px;width:20px;left:3px;bottom:3px;background:var(--muted);border-radius:50%;transition:.3s;}
+.toggle-wrap input:checked + .toggle-slider{background:rgba(0,200,255,.15);border-color:var(--accent);}
+.toggle-wrap input:checked + .toggle-slider::before{transform:translateX(24px);background:var(--accent);}
+.badge-save{background:rgba(0,255,157,.12);color:var(--accent2);border:1px solid rgba(0,255,157,.3);border-radius:100px;padding:.2rem .7rem;font-size:.75rem;font-family:var(--mono);}
+
+/* ── ABOs ── */
+.plans-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem;margin-top:2rem;}
+
+.plan-card{background:var(--bg3);border:1px solid var(--border);border-radius:16px;padding:2.5rem 2rem;position:relative;transition:transform .2s,border-color .2s;}
+.plan-card:hover{transform:translateY(-4px);}
+.plan-card.featured{border-color:var(--accent);background:linear-gradient(135deg,rgba(0,200,255,.06),var(--bg3));}
+.plan-card.featured::before{content:'EMPFOHLEN';position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--accent);color:var(--bg);font-family:var(--mono);font-size:.65rem;letter-spacing:.12em;padding:.3rem 1rem;border-radius:0 0 8px 8px;}
+
+.plan-name{font-family:var(--sans);font-weight:700;font-size:1.1rem;margin-bottom:.3rem;}
+.plan-tagline{font-size:.82rem;color:var(--muted);margin-bottom:1.5rem;}
+
+.plan-price{display:flex;align-items:baseline;gap:.3rem;margin-bottom:.3rem;}
+.price-amount{font-family:var(--mono);font-size:2.8rem;font-weight:700;color:var(--text);}
+.price-period{font-size:.85rem;color:var(--muted);}
+.price-annual{font-size:.78rem;color:var(--accent2);margin-bottom:1.5rem;font-family:var(--mono);}
+.price-annual.hidden{display:none;}
+
+.plan-tokens{background:rgba(0,200,255,.06);border:1px solid rgba(0,200,255,.15);border-radius:8px;padding:.8rem 1rem;margin-bottom:1.5rem;font-family:var(--mono);font-size:.8rem;color:var(--accent);}
+
+.plan-features{list-style:none;display:flex;flex-direction:column;gap:.6rem;margin-bottom:2rem;}
+.plan-features li{font-size:.87rem;color:var(--muted);display:flex;align-items:flex-start;gap:.6rem;}
+.plan-features li::before{content:'✓';color:var(--accent2);flex-shrink:0;font-weight:700;}
+.plan-features li.no::before{content:'✗';color:rgba(107,127,163,.4);}
+.plan-features li.no{color:rgba(107,127,163,.4);}
+
+.plan-btn{display:block;width:100%;padding:.85rem;border-radius:8px;font-family:var(--body);font-size:.95rem;font-weight:500;text-align:center;text-decoration:none;border:none;cursor:pointer;transition:transform .15s,box-shadow .15s;}
+.plan-btn.outline{background:transparent;border:1px solid var(--border);color:var(--text);}
+.plan-btn.outline:hover{border-color:var(--accent);color:var(--accent);}
+.plan-btn.solid{background:var(--accent);color:var(--bg);}
+.plan-btn.solid:hover{box-shadow:0 8px 30px rgba(0,200,255,.3);transform:translateY(-1px);}
+
+/* ── PREPAID ── */
+.prepaid-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-top:2rem;}
+
+.prepaid-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:1.8rem 1.5rem;text-align:center;transition:border-color .2s,transform .2s;}
+.prepaid-card:hover{border-color:var(--accent);transform:translateY(-2px);}
+
+.prepaid-amount{font-family:var(--mono);font-size:2rem;font-weight:700;color:var(--accent);display:block;margin-bottom:.2rem;}
+.prepaid-tokens{font-family:var(--mono);font-size:.8rem;color:var(--accent2);display:block;margin-bottom:.8rem;}
+.prepaid-perkk{font-size:.78rem;color:var(--muted);margin-bottom:1.2rem;}
+.prepaid-validity{font-size:.75rem;color:rgba(107,127,163,.5);font-family:var(--mono);}
+
+/* ── ONBOARDING ── */
+.onboarding-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:2rem;}
+
+.onboarding-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:2rem;display:flex;flex-direction:column;gap:1rem;}
+.onboarding-card.featured{border-color:var(--accent2);}
+.onboarding-name{font-family:var(--sans);font-weight:700;font-size:1.15rem;}
+.onboarding-price{font-family:var(--mono);font-size:1.8rem;font-weight:700;color:var(--accent);}
+.onboarding-once{font-size:.78rem;color:var(--muted);font-family:var(--mono);}
+.onboarding-features li{font-size:.85rem;color:var(--muted);display:flex;gap:.5rem;margin-bottom:.4rem;}
+.onboarding-features li::before{content:'→';color:var(--accent);flex-shrink:0;}
+
+/* ── MODULE LICENSES ── */
+.modules-table{width:100%;border-collapse:collapse;margin-top:2rem;}
+.modules-table th{font-family:var(--mono);font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;padding:.8rem 1rem;border-bottom:1px solid var(--border);text-align:left;}
+.modules-table td{padding:.9rem 1rem;border-bottom:1px solid rgba(30,46,72,.5);font-size:.9rem;}
+.modules-table tr:hover td{background:rgba(0,200,255,.03);}
+.modules-table .price-col{font-family:var(--mono);color:var(--accent);}
+.modules-table .annual-col{font-family:var(--mono);color:var(--accent2);font-size:.83rem;}
+.modules-table .name-col{font-weight:500;}
+.modules-table .desc-col{color:var(--muted);font-size:.83rem;}
+.tag-small{display:inline-block;font-family:var(--mono);font-size:.65rem;padding:.15rem .5rem;border-radius:100px;margin-left:.5rem;vertical-align:middle;}
+.tag-free{background:rgba(0,255,157,.1);color:var(--accent2);border:1px solid rgba(0,255,157,.2);}
+.tag-incl{background:rgba(0,200,255,.1);color:var(--accent);border:1px solid rgba(0,200,255,.2);}
+
+/* ── HARDWARE ── */
+.hardware-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin-top:2rem;}
+
+.hw-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:2rem;transition:border-color .2s;}
+.hw-card:hover{border-color:var(--accent);}
+.hw-name{font-family:var(--sans);font-weight:700;font-size:1.1rem;margin-bottom:.3rem;}
+.hw-sub{font-size:.78rem;color:var(--muted);font-family:var(--mono);margin-bottom:1.2rem;}
+.hw-price{font-family:var(--mono);font-size:2rem;font-weight:700;color:var(--text);margin-bottom:.2rem;}
+.hw-margin{font-size:.75rem;color:var(--accent2);font-family:var(--mono);margin-bottom:1.2rem;}
+.hw-spec{font-size:.82rem;color:var(--muted);line-height:1.8;}
+.hw-spec span{color:var(--text);}
+
+/* ── TOKEN TABLE ── */
+.token-table{width:100%;border-collapse:collapse;margin-top:1.5rem;}
+.token-table th{font-family:var(--mono);font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;padding:.7rem 1rem;border-bottom:1px solid var(--border);text-align:left;}
+.token-table td{padding:.75rem 1rem;border-bottom:1px solid rgba(30,46,72,.4);font-size:.85rem;}
+.token-table tr:nth-child(even) td{background:rgba(0,200,255,.02);}
+.token-table .cost-col{font-family:var(--mono);color:var(--accent2);}
+
+/* ── FAQ ── */
+.faq-list{margin-top:2rem;display:flex;flex-direction:column;gap:1rem;}
+.faq-item{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:1.5rem;}
+.faq-q{font-weight:500;font-size:.95rem;margin-bottom:.5rem;cursor:pointer;}
+.faq-a{font-size:.87rem;color:var(--muted);line-height:1.7;}
+
+footer{background:var(--bg);border-top:1px solid var(--border);padding:2.5rem 4rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;}
+.footer-logo{font-family:var(--mono);font-size:.9rem;color:var(--muted);}
+.footer-links{display:flex;gap:2rem;}
+.footer-links a{font-size:.85rem;color:var(--muted);text-decoration:none;transition:color .2s;}
+.footer-links a:hover{color:var(--text);}
+.footer-right{font-family:var(--mono);font-size:.75rem;color:rgba(107,127,163,.4);}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.reveal{opacity:0;transform:translateY(25px);transition:opacity .6s ease,transform .6s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+@media(max-width:768px){nav{padding:1rem 1.5rem;}.nav-links{display:none;}.onboarding-grid{grid-template-columns:1fr;}.hardware-grid{grid-template-columns:1fr;}footer{flex-direction:column;padding:2rem;}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">PP<span>AA</span></a>
+  <div class="nav-links">
+    <a href="index.html#why">Warum PPAA</a>
+    <a href="index.html#modules">Module</a>
+    <a href="concept.html">Konzept</a>
+    <a href="pricing.html" style="color:var(--text)">Preise</a>
+    <a href="index.html" class="nav-cta">Startseite</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="page-hero">
+  <p class="section-label">Transparent & flexibel</p>
+  <h1>Preise & Pakete</h1>
+  <p>Bezahle was du nutzt — oder wähle ein Abo. Jederzeit wechselbar, keine Mindestlaufzeit für Prepaid. Anonyme Zahlung via Monero oder Lightning.</p>
+</div>
+
+<!-- ABO SECTION -->
+<section id="abo" style="background:var(--bg2);">
+  <div class="container">
+    <p class="section-label">API-Nutzung (Cloud-Backend)</p>
+    <h2 style="font-family:var(--sans);font-weight:700;font-size:2rem;letter-spacing:-.02em;margin-bottom:.5rem;">Abonnements</h2>
+    <p style="color:var(--muted);font-size:.95rem;max-width:550px;">Monatliches Token-Volumen für die KI-Nutzung. Bei Eigeninfrastruktur (eigener Pi) werden Token nur für Cloud-Backup-Anfragen benötigt.</p>
+
+    <div class="billing-toggle">
+      <span class="toggle-label active" id="lbl-monthly">Monatlich</span>
+      <label class="toggle-wrap">
+        <input type="checkbox" id="billing-toggle">
+        <span class="toggle-slider"></span>
+      </label>
+      <span class="toggle-label" id="lbl-annual">Jährlich</span>
+      <span class="badge-save">–17%</span>
+    </div>
+
+    <div class="plans-grid reveal">
+      <!-- LITE -->
+      <div class="plan-card">
+        <div class="plan-name">Lite</div>
+        <div class="plan-tagline">Gelegenheitsnutzer</div>
+        <div class="plan-price"><span class="price-amount" data-monthly="3.99" data-annual="3.29">€3,99</span><span class="price-period">/Monat</span></div>
+        <div class="price-annual hidden" id="ann-lite">= €39,49/Jahr (spare €8,39)</div>
+        <div class="plan-tokens">~80.000 Tokens/Monat</div>
+        <ul class="plan-features">
+          <li>Einfache Chat-Anfragen (~130 Stück)</li>
+          <li>PiControl Basiszugang</li>
+          <li>FamilyMeal-Pi</li>
+          <li class="no">Health-Pi</li>
+          <li class="no">Beihilfe-Pi</li>
+          <li class="no">Schwurbelwiki</li>
+        </ul>
+        <a href="index.html#cta" class="plan-btn outline">Anfragen</a>
+      </div>
+
+      <!-- STANDARD -->
+      <div class="plan-card featured">
+        <div class="plan-name">Standard</div>
+        <div class="plan-tagline">Für Regelnutzer</div>
+        <div class="plan-price"><span class="price-amount" data-monthly="8.99" data-annual="7.45">€8,99</span><span class="price-period">/Monat</span></div>
+        <div class="price-annual hidden" id="ann-std">= €89,49/Jahr (spare €18,39)</div>
+        <div class="plan-tokens">~250.000 Tokens/Monat</div>
+        <ul class="plan-features">
+          <li>~415 Chat-Anfragen</li>
+          <li>PiControl + alle Basis-Module</li>
+          <li>FamilyMeal + Beihilfe-Pi</li>
+          <li>Health-Pi Basis (5 Collections)</li>
+          <li class="no">Health-Pi Premium</li>
+          <li class="no">Schwurbelwiki</li>
+        </ul>
+        <a href="index.html#cta" class="plan-btn solid">Anfragen</a>
+      </div>
+
+      <!-- PRO -->
+      <div class="plan-card">
+        <div class="plan-name">Pro</div>
+        <div class="plan-tagline">Heavy User & Profis</div>
+        <div class="plan-price"><span class="price-amount" data-monthly="18.99" data-annual="15.75">€18,99</span><span class="price-period">/Monat</span></div>
+        <div class="price-annual hidden" id="ann-pro">= €189/Jahr (spare €38,88)</div>
+        <div class="plan-tokens">~750.000 Tokens/Monat</div>
+        <ul class="plan-features">
+          <li>~1.250 Chat-Anfragen</li>
+          <li>Alle Module inklusive</li>
+          <li>Health-Pi Premium + Schwurbelwiki</li>
+          <li>Prioritäts-Support</li>
+          <li>Erweiterte Collections (alle Kategorien)</li>
+          <li>API-Direktzugang</li>
+        </ul>
+        <a href="index.html#cta" class="plan-btn outline">Anfragen</a>
+      </div>
+
+      <!-- FAMILY -->
+      <div class="plan-card">
+        <div class="plan-name">Family</div>
+        <div class="plan-tagline">Bis 5 Nutzer</div>
+        <div class="plan-price"><span class="price-amount" data-monthly="29.99" data-annual="24.89">€29,99</span><span class="price-period">/Monat</span></div>
+        <div class="price-annual hidden" id="ann-fam">= €299/Jahr (spare €60,88)</div>
+        <div class="plan-tokens">~1.500.000 Tokens/Monat (geteilt)</div>
+        <ul class="plan-features">
+          <li>5 Nutzerprofile</li>
+          <li>Alle Module für alle Nutzer</li>
+          <li>Geteiltes Token-Pool</li>
+          <li>Kinderprofil mit Content-Filter</li>
+          <li>FamilyMeal: Multi-User-Präferenzen</li>
+          <li>Prioritäts-Support</li>
+        </ul>
+        <a href="index.html#cta" class="plan-btn outline">Anfragen</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PREPAID -->
+<section id="prepaid" style="background:var(--bg);">
+  <div class="container">
+    <p class="section-label">Flexibel & anonym</p>
+    <h2 style="font-family:var(--sans);font-weight:700;font-size:2rem;letter-spacing:-.02em;margin-bottom:.5rem;">Prepaid-Token</h2>
+    <p style="color:var(--muted);font-size:.95rem;max-width:550px;">Kein Abo, kein Vertrag. Token kaufen, sofort nutzen, 12 Monate gültig. Zahlung via Cashu/Monero/Lightning.</p>
+
+    <div class="prepaid-grid reveal">
+      <div class="prepaid-card">
+        <span class="prepaid-amount">€5</span>
+        <span class="prepaid-tokens">~100.000 Tokens</span>
+        <div class="prepaid-perkk">€0,050 / 1.000 Token</div>
+        <div class="prepaid-validity">Gültig 12 Monate</div>
+      </div>
+      <div class="prepaid-card" style="border-color:rgba(0,200,255,.3);">
+        <span class="prepaid-amount">€10</span>
+        <span class="prepaid-tokens">~250.000 Tokens</span>
+        <div class="prepaid-perkk">€0,040 / 1.000 Token</div>
+        <div class="prepaid-validity">Gültig 12 Monate</div>
+      </div>
+      <div class="prepaid-card">
+        <span class="prepaid-amount">€20</span>
+        <span class="prepaid-tokens">~600.000 Tokens</span>
+        <div class="prepaid-perkk">€0,033 / 1.000 Token</div>
+        <div class="prepaid-validity">Gültig 12 Monate</div>
+      </div>
+      <div class="prepaid-card">
+        <span class="prepaid-amount">€50</span>
+        <span class="prepaid-tokens">~1.800.000 Tokens</span>
+        <div class="prepaid-perkk">€0,028 / 1.000 Token</div>
+        <div class="prepaid-validity">Gültig 12 Monate</div>
+      </div>
+    </div>
+
+    <!-- Token cost table -->
+    <h3 style="font-family:var(--sans);font-weight:600;font-size:1.2rem;margin-top:3rem;margin-bottom:.5rem;">Was kostet welche Aktion?</h3>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:.5rem;">Richtwerte bei Tier-2 Prepaid (€10 Stufe):</p>
+    <table class="token-table reveal">
+      <thead>
+        <tr><th>Aktion</th><th>Ø Token</th><th>Kosten</th><th>Beispiele</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Einfache Chatanfrage</td><td>~600</td><td class="cost-col">0,3 Ct</td><td style="color:var(--muted);font-size:.8rem;">Frage beantworten, kurze Erklärung</td></tr>
+        <tr><td>Dokumentenanalyse (1 Seite)</td><td>~1.800</td><td class="cost-col">0,9 Ct</td><td style="color:var(--muted);font-size:.8rem;">Arztbrief, Vertrag einlesen</td></tr>
+        <tr><td>Recherche-Query (+ Web)</td><td>~2.500</td><td class="cost-col">1,25 Ct</td><td style="color:var(--muted);font-size:.8rem;">Themenrecherche mit Quellen</td></tr>
+        <tr><td>Health-Analyse (RAG + LLM)</td><td>~4.000</td><td class="cost-col">2,0 Ct</td><td style="color:var(--muted);font-size:.8rem;">Diagnose-Analyse, Behandlungsoptionen</td></tr>
+        <tr><td>Mahlzeitenplanung 7 Tage</td><td>~3.000</td><td class="cost-col">1,5 Ct</td><td style="color:var(--muted);font-size:.8rem;">Wochenmenü + Einkaufsliste</td></tr>
+        <tr><td>Beihilfeantrag vollständig</td><td>~5.000</td><td class="cost-col">2,5 Ct</td><td style="color:var(--muted);font-size:.8rem;">OCR + Formular + Antrag</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ONBOARDING -->
+<section id="onboarding" style="background:var(--bg2);">
+  <div class="container">
+    <p class="section-label">Für den Start</p>
+    <h2 style="font-family:var(--sans);font-weight:700;font-size:2rem;letter-spacing:-.02em;margin-bottom:.5rem;">Onboarding-Pakete</h2>
+    <p style="color:var(--muted);font-size:.95rem;max-width:580px;">Der erste Monat ist token-intensiv: Dokumente scannen, System kennenlernen, alles einrichten. Diese Pakete sind dafür optimiert.</p>
+
+    <div class="onboarding-grid reveal">
+      <div class="onboarding-card">
+        <div class="onboarding-name">Onboarding Basis</div>
+        <div class="onboarding-price">€9,99 <span class="onboarding-once">einmalig</span></div>
+        <ul class="onboarding-features" style="list-style:none;">
+          <li>500.000 Tokens (~830 Dokumente)</li>
+          <li>30 Tage persönlicher Support-Chat</li>
+          <li>Setup-Anleitung (Schritt für Schritt)</li>
+          <li>Danach frei wählen: Prepaid oder Abo</li>
+        </ul>
+        <a href="index.html#cta" class="plan-btn outline" style="margin-top:auto;">Anfragen</a>
+      </div>
+      <div class="onboarding-card featured">
+        <div class="onboarding-name">Onboarding Pro</div>
+        <div class="onboarding-price">€24,99 <span class="onboarding-once">einmalig</span></div>
+        <ul class="onboarding-features" style="list-style:none;">
+          <li>2.000.000 Tokens (~3.300 Dokumente)</li>
+          <li>60 Tage Prioritäts-Support</li>
+          <li>Persönliche Einrichtungshilfe</li>
+          <li>Health-Pi Collections-Setup inklusive</li>
+          <li>Danach frei wählen: Prepaid oder Abo</li>
+        </ul>
+        <a href="index.html#cta" class="plan-btn solid" style="margin-top:auto;">Anfragen</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODULE LICENSES -->
+<section id="module-licenses" style="background:var(--bg);">
+  <div class="container">
+    <p class="section-label">Eigeninfrastruktur</p>
+    <h2 style="font-family:var(--sans);font-weight:700;font-size:2rem;letter-spacing:-.02em;margin-bottom:.5rem;">Modul-Lizenzen</h2>
+    <p style="color:var(--muted);font-size:.95rem;max-width:580px;">Du hast eigene Hardware? Diese Lizenzen aktivieren die Module auf deinem Pi. Token-Verbrauch fällt nur für Cloud-Backup-Anfragen an.</p>
+
+    <table class="modules-table reveal">
+      <thead>
+        <tr>
+          <th>Modul</th>
+          <th>Monatlich</th>
+          <th>Jährlich</th>
+          <th>Enthalten</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="name-col">PiControl <span class="tag-small tag-free">KOSTENLOS</span></td>
+          <td class="price-col">kostenlos</td>
+          <td class="annual-col">kostenlos</td>
+          <td class="desc-col">Mit Hardware-Bundle; Systemzentrale, Installer, Backup</td>
+        </tr>
+        <tr>
+          <td class="name-col">PiControl Standalone</td>
+          <td class="price-col">€4,99</td>
+          <td class="annual-col">€49,99</td>
+          <td class="desc-col">Für eigene Hardware ohne Bundle-Kauf</td>
+        </tr>
+        <tr>
+          <td class="name-col">FamilyMeal-Pi</td>
+          <td class="price-col">€3,99</td>
+          <td class="annual-col">€39,99</td>
+          <td class="desc-col">Mahlzeitenplanung, Einkaufsliste, Marktpreise</td>
+        </tr>
+        <tr>
+          <td class="name-col">Beihilfe-Pi</td>
+          <td class="price-col">€5,99</td>
+          <td class="annual-col">€59,99</td>
+          <td class="desc-col">Vollständige Beihilfe-Abrechnung, PDF-Formulare</td>
+        </tr>
+        <tr>
+          <td class="name-col">Health-Pi Basis</td>
+          <td class="price-col">€9,99</td>
+          <td class="annual-col">€99,99</td>
+          <td class="desc-col">RAG-Assistent, 5 kurierte Collections, persönl. Wissensspeicher</td>
+        </tr>
+        <tr>
+          <td class="name-col">Health-Pi Premium</td>
+          <td class="price-col">€19,99</td>
+          <td class="annual-col">€199,99</td>
+          <td class="desc-col">+ Schwurbelwiki, alle Collections, unbegrenzter mediz. Chat</td>
+        </tr>
+        <tr>
+          <td class="name-col">Schwurbelwiki</td>
+          <td class="price-col">€7,99</td>
+          <td class="annual-col">€79,99</td>
+          <td class="desc-col">Recherchemaschine, Pipeline-Editor, alle Quellen</td>
+        </tr>
+        <tr style="background:rgba(0,200,255,.03);">
+          <td class="name-col"><strong>All-Inclusive Bundle</strong> <span class="tag-small tag-incl">ALLE MODULE</span></td>
+          <td class="price-col"><strong>€34,99</strong></td>
+          <td class="annual-col"><strong>€329,99</strong></td>
+          <td class="desc-col">Alle Module + API-Tokens Standard-Volumen (250k/M)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- HARDWARE BUNDLES -->
+<section id="hardware" style="background:var(--bg2);">
+  <div class="container">
+    <p class="section-label">Plug &amp; Play</p>
+    <h2 style="font-family:var(--sans);font-weight:700;font-size:2rem;letter-spacing:-.02em;margin-bottom:.5rem;">Hardware-Bundles</h2>
+    <p style="color:var(--muted);font-size:.95rem;max-width:580px;">Fertig konfiguriert, vorinstalliert, sofort einsatzbereit. Anschließen, WLAN-Passwort eingeben, loslegen.</p>
+
+    <div class="hardware-grid reveal">
+      <div class="hw-card">
+        <div class="hw-name">PPAA Starter</div>
+        <div class="hw-sub">Raspberry Pi 5 (4GB)</div>
+        <div class="hw-price">€329</div>
+        <div class="hw-margin">inkl. PiControl-Lizenz · Komponenten ~€284</div>
+        <div class="hw-spec">
+          <span>Pi 5 (4GB RAM)</span> ab €86<br>
+          Samsung 990 Pro 1TB NVMe ab €163<br>
+          Argon ONE V3 M.2 Gehäuse ~€50<br>
+          Offizielles 27W USB-C Netzteil ~€14<br>
+          PPAA vorinstalliert · Stand: Feb 2026
+        </div>
+      </div>
+      <div class="hw-card" style="border-color:rgba(0,200,255,.4);">
+        <div class="hw-name">PPAA Pro</div>
+        <div class="hw-sub">Raspberry Pi 5 (8GB) – Empfohlen</div>
+        <div class="hw-price">€469</div>
+        <div class="hw-margin">inkl. PiControl + Health-Pi + OLED Display · Komponenten ~€411</div>
+        <div class="hw-spec">
+          <span>Pi 5 (8GB RAM)</span> ab €127<br>
+          Samsung 990 Pro 2TB NVMe ab €225<br>
+          Argon ONE V3 M.2 Gehäuse (aktiv/passiv) ~€50<br>
+          <span>SSD1306 OLED 0,96" Status-Display</span> ~€5<br>
+          Offizielles 27W USB-C Netzteil ~€14<br>
+          PPAA vorinstalliert + Health-Pi konfiguriert · Stand: Feb 2026
+        </div>
+      </div>
+      <div class="hw-card">
+        <div class="hw-name">PPAA NAS-Kit</div>
+        <div class="hw-sub">Raspberry Pi 5 (16GB) + UPS</div>
+        <div class="hw-price">€719</div>
+        <div class="hw-margin">inkl. PiControl + 1 Monat All-Inclusive + OLED · Komponenten ~€629</div>
+        <div class="hw-spec">
+          <span>Pi 5 (16GB RAM)</span> ab €210<br>
+          Samsung 990 Pro 2TB NVMe ab €225<br>
+          PiSugar 3 UPS-HAT (Stromausfallschutz) ~€40<br>
+          Argon ONE V3 M.2 Gehäuse ~€50<br>
+          <span>SSD1306 OLED 0,96" Status-Display</span> ~€5<br>
+          Automatisches NAS-Backup vorkonfiguriert · Stand: Feb 2026
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" style="background:var(--bg);">
+  <div class="container" style="max-width:750px;">
+    <p class="section-label">Häufige Fragen</p>
+    <h2 style="font-family:var(--sans);font-weight:700;font-size:2rem;letter-spacing:-.02em;margin-bottom:.5rem;">FAQ</h2>
+
+    <div class="faq-list reveal">
+      <div class="faq-item">
+        <div class="faq-q">Kann ich wirklich anonym zahlen?</div>
+        <div class="faq-a">Ja. Wir akzeptieren Monero (XMR) und Lightning-Payments via Cashu eCash. Durch Chaumian Blind Signatures ist es mathematisch unmöglich, eine Zahlung mit einer späteren Nutzung zu verknüpfen. Kein Konto, keine E-Mail, kein KYC erforderlich.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Was passiert wenn ich kein Internet habe?</div>
+        <div class="faq-a">Das lokale LLM (Ollama) läuft vollständig offline. Deine gespeicherten Dokumente, der Health-Pi RAG, FamilyMeal und Beihilfe funktionieren ohne Internet. Nur für Web-Recherche (Schwurbelwiki) ist Internet erforderlich.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Wechsle ich zwischen Prepaid und Abo beliebig?</div>
+        <div class="faq-a">Ja. Du kannst jederzeit von Prepaid auf Abo wechseln oder umgekehrt. Ungenutztes Prepaid-Guthaben bleibt 12 Monate gültig. Bei Abo-Wechsel im Monat werden anteilige Token gutgeschrieben.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Brauche ich Programmierkenntnisse?</div>
+        <div class="faq-a">Nein. PiControl übernimmt die gesamte Installation per menügesteuertem TUI. Für die Hardware-Bundles ist buchstäblich nur "Anstecken" nötig — PPAA startet automatisch beim ersten Boot.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Wie sicher sind meine Gesundheitsdaten?</div>
+        <div class="faq-a">Sie liegen ausschließlich auf deiner eigenen Hardware — verschlüsselt auf dem lokalen Storage, nie in einer Cloud. Health-Pi ist kein Medizinprodukt und ersetzt keine ärztliche Beratung.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">PPAA – Private Personal AI Assistant</div>
+  <div class="footer-links">
+    <a href="index.html">Start</a>
+    <a href="concept.html">Konzept</a>
+    <a href="pricing.html">Preise</a>
+  </div>
+  <div class="footer-right">Beta • Vertraulich • 2025</div>
+</footer>
+
+<script>
+// Billing toggle
+const toggle = document.getElementById('billing-toggle');
+const lblM = document.getElementById('lbl-monthly');
+const lblA = document.getElementById('lbl-annual');
+const annualLabels = ['ann-lite','ann-std','ann-pro','ann-fam'];
+
+toggle.addEventListener('change', () => {
+  const isAnnual = toggle.checked;
+  lblM.classList.toggle('active', !isAnnual);
+  lblA.classList.toggle('active', isAnnual);
+  document.querySelectorAll('.price-amount').forEach(el => {
+    const val = isAnnual ? el.dataset.annual : el.dataset.monthly;
+    el.textContent = '€' + parseFloat(val).toFixed(2).replace('.',',');
+  });
+  annualLabels.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('hidden', !isAnnual);
+  });
+});
+
+// Scroll reveal
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, {threshold:0.08, rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
